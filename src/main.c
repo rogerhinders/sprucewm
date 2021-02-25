@@ -36,12 +36,16 @@ int main() {
 
 	xcb_generic_event_t *ev;
 	xcb_key_press_event_t *kev;
+
 	struct window *wnd;
 
 	while((ev = xcb_wait_for_event(xserver_get_conn())) && wm_running) {
 		switch(ev->response_type) {
 		case XCB_CONFIGURE_REQUEST:
 			printf("--- config request! ---\n");
+
+			xserver_handle_configure_request(
+					(xcb_configure_request_event_t *)ev);
 			break;
 		case XCB_CONFIGURE_NOTIFY:
 			printf("--- configure notify request! ---\n");
@@ -52,6 +56,13 @@ int main() {
 
 			wm_register(wnd);
 			xserver_map_window(wnd);
+			wm_update();
+			break;
+		case XCB_DESTROY_NOTIFY:
+
+			printf("--- xcb destroy --\n");
+			wm_unregister(
+					wm_find_window(((xcb_destroy_notify_event_t *)ev)->window));
 			wm_update();
 			break;
 		case XCB_UNMAP_NOTIFY:
@@ -84,7 +95,7 @@ int main() {
 				break;
 			case 'y':
 				printf("starting xterm\n");
-				system("rxvt &");
+				system("xterm &");
 				break;
 			case 'k':
 				system("xkill &");

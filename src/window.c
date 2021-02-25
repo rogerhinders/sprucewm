@@ -8,14 +8,23 @@ struct window *window_create(const xcb_window_t handle) {
 	}
 	
 	wnd->handle = handle;
-	wnd->x = 0;
-	wnd->y = 0;
-	wnd->w = 0;
-	wnd->h = 0;
+
+	window_setcoords(wnd, 0, 0);
+	window_setsize(wnd, 0, 0);
 
 	return wnd;
 }
 
 void window_destroy(struct window *wnd) {
 	free(wnd);
+}
+
+void window_setcoords(struct window *wnd, uint32_t x, uint32_t y) {
+	wnd->x = x;
+	wnd->y = y;
+}
+
+void window_setsize(struct window *wnd, uint32_t w, uint32_t h) {
+	wnd->w = w;
+	wnd->h = h;
 }
