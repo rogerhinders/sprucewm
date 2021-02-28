@@ -11,7 +11,25 @@ void wm_register(struct window *wnd) {
 		return;
 	}
 
+	/* read wnd title */
+	xcb_get_property_cookie_t g_cookie = xcb_get_property(
+			xserver_get_conn(), 0,
+			wnd->handle, XCB_ATOM_WM_NAME,XCB_ATOM_STRING, 0, 252/4);
+	xcb_get_property_reply_t *p_reply = xcb_get_property_reply(
+			xserver_get_conn(), g_cookie, NULL);
+
+	if(xcb_get_property_value_length(p_reply) == 0) {
+		printf("err: unable to read wnd title\n");
+	} else {
+		window_setname(wnd, (char *)xcb_get_property_value(p_reply));
+	}
+
+	free(p_reply);
+
+	/* add to our list */
 	linked_list_add(wm_list, wnd);
+
+	printf("window added with title: %s\n", wnd->name);
 }
 
 void wm_unregister(struct window *wnd) {
@@ -48,7 +66,8 @@ void wm_update() {
 	uint32_t cells_v = cells_h;
 
 	uint32_t wnd_w = xserver_get_root_wnd()->w / cells_h;
-	uint32_t wnd_h = xserver_get_root_wnd()->h / cells_v;
+	uint32_t wnd_h = 
+			(xserver_get_root_wnd()->h - taskbar_get_height()) / cells_v;
 
 	linked_list_rewind(wm_list);
 
@@ -78,4 +97,8 @@ void wm_update() {
 
 void wm_cleanup() {
 	linked_list_destroy(wm_list);
+}
+
+struct linked_list *wm_get_windows() {
+	return wm_list;
 }

@@ -3,6 +3,7 @@
 
 #include "general.h"
 #include "wm.h"
+#include "taskbar.h"
 
 int main() {
 	int32_t ret = EXIT_SUCCESS;
@@ -21,21 +22,16 @@ int main() {
 		goto _main_cleanup;
 	}
 
+	if(!taskbar_init()) {
+		ret = EXIT_FAILURE;
+		goto _main_cleanup;
+	}
+
 	xcb_key_symbols_t *k_syms = xcb_key_symbols_alloc(xserver_get_conn());
-
-	xcb_grab_key(
-			xserver_get_conn(),
-			1,
-			xserver_get_root_wnd()->handle,
-			XCB_MOD_MASK_4,
-			XCB_GRAB_ANY,
-			XCB_GRAB_MODE_ASYNC,
-			XCB_GRAB_MODE_ASYNC);
-
-	xcb_flush(xserver_get_conn());
 
 	xcb_generic_event_t *ev;
 	xcb_key_press_event_t *kev;
+	xcb_button_release_event_t *bev;
 
 	struct window *wnd;
 
@@ -43,7 +39,6 @@ int main() {
 		switch(ev->response_type) {
 		case XCB_CONFIGURE_REQUEST:
 			printf("--- config request! ---\n");
-
 			xserver_handle_configure_request(
 					(xcb_configure_request_event_t *)ev);
 			break;
@@ -53,23 +48,33 @@ int main() {
 		case XCB_MAP_REQUEST:
 			printf("--- map request! ---\n");
 			wnd = window_create(((xcb_map_request_event_t *)ev)->window);
-
 			wm_register(wnd);
 			xserver_map_window(wnd);
+
 			wm_update();
+			taskbar_update();
 			break;
 		case XCB_DESTROY_NOTIFY:
-
 			printf("--- xcb destroy --\n");
 			wm_unregister(
 					wm_find_window(((xcb_destroy_notify_event_t *)ev)->window));
 			wm_update();
+			taskbar_update();
 			break;
 		case XCB_UNMAP_NOTIFY:
 			printf("--- unmap notify! ---\n");
 			break;
-		case XCB_BUTTON_PRESS:
-			printf("pressed moust\n");
+		case XCB_BUTTON_RELEASE:
+			bev = (xcb_button_release_event_t *)ev;
+			wnd = taskbar_get_window();
+
+			if(wnd != NULL && bev->event == wnd->handle) {
+				printf("pressed on taskbar @ %d,%d\n",
+						bev->event_x, bev->event_y);
+				taskbar_onclick(bev->event_x, bev->event_y);
+			}
+
+			printf("pressed mouse\n");
 			break;
 		case XCB_KEY_RELEASE:
 			printf("--- key release! ---\n");
@@ -110,33 +115,9 @@ int main() {
 		}
 	}
 
-//	wnd_id = xcb_generate_id(conn);
-
-//	attr_name = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
-//	attr_value[0] = screen->white_pixel;
-//	attr_value[1] = XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_KEY_PRESS;
-
-
-//	xcb_create_window(
-//			conn,
-//			screen->root_depth,
-//			wnd_id,
-//			screen->root,
-//			0, /* pos X */
-//			0, /* pos Y */
-//1000,//			screen->width_in_pixels, /* width */
-//1000,//			screen->height_in_pixels, /* height */
-//			1, /* border width */
-//			XCB_WINDOW_CLASS_INPUT_OUTPUT, /* class */
-//			screen->root_visual,
-//			attr_name, /* v-mask */
-//			&attr_value); /* v-list */
-
-//	xcb_map_window(conn, wnd_id);
-//	xcb_flush(conn);
-
 _main_cleanup:
 	wm_cleanup();
+	taskbar_cleanup();
 	xcb_disconnect(xserver_get_conn());
 	return ret;
 }
