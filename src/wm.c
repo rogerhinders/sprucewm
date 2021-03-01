@@ -56,28 +56,47 @@ struct window *wm_find_window(xcb_window_t handle) {
 
 void wm_update() {
 	struct window *wnd;
+	struct window *r_wnd = xserver_get_root_wnd();
+
+	if(r_wnd == NULL)
+		return;
 
 	uint32_t c_mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y |
 			XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
 
 	uint32_t c_values[4];
+	uint32_t n_visible = 0;
 
-	uint32_t cells_h = (uint32_t)ceil(sqrt(linked_list_count(wm_list)));
+	linked_list_rewind(wm_list);
+
+	while((wnd = linked_list_next(wm_list)) != NULL) {
+		if(window_is_visible(wnd))
+			n_visible++;
+	}
+
+	printf("n_visible:%d\n", n_visible);
+
+	if(n_visible == 0)
+		return;
+
+
+	uint32_t cells_h = (uint32_t)ceil(sqrt(n_visible));
 	uint32_t cells_v = cells_h;
 
-	uint32_t wnd_w = xserver_get_root_wnd()->w / cells_h;
-	uint32_t wnd_h = 
-			(xserver_get_root_wnd()->h - taskbar_get_height()) / cells_v;
+	uint32_t wnd_w = r_wnd->w / cells_h;
+	uint32_t wnd_h = (r_wnd->h - taskbar_get_height()) / cells_v;
 
 	linked_list_rewind(wm_list);
 
 	for(int cx = 0; cx < cells_h; cx++) {
 		for(int cy = 0; cy < cells_v; cy++) {
-			wnd = linked_list_next(wm_list);
-
-			if(wnd == NULL) {
-				break;
+			while((wnd = linked_list_next(wm_list))) {
+				if(wnd == NULL || window_is_visible(wnd))
+					break;
 			}
+
+			if(wnd == NULL)
+				break;
 
 			window_setcoords(wnd, cx * wnd_w, cy * wnd_h);
 			window_setsize(wnd, wnd_w, wnd_h);

@@ -39,3 +39,7 @@ void window_set_toggle_button(
 		struct window *wnd, struct button *btn) {
 	wnd->toggle_btn = btn;
 }
+
+bool window_is_visible(struct window *wnd) {
+	return wnd->toggle_btn == NULL || wnd->toggle_btn->pressed;
+}

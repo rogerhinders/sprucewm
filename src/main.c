@@ -51,7 +51,7 @@ int main() {
 			wm_register(wnd);
 			xserver_map_window(wnd);
 
-			wm_update();
+			//wm_update();
 			taskbar_update();
 			break;
 		case XCB_DESTROY_NOTIFY:
@@ -63,6 +63,11 @@ int main() {
 			break;
 		case XCB_UNMAP_NOTIFY:
 			printf("--- unmap notify! ---\n");
+			wm_update();
+			break;
+		case XCB_MAP_NOTIFY:
+			printf("--- map notify! ---\n");
+			wm_update();
 			break;
 		case XCB_BUTTON_RELEASE:
 			bev = (xcb_button_release_event_t *)ev;

@@ -22,5 +22,6 @@ void window_setsize(struct window *wnd, uint32_t w, uint32_t h);
 void window_setname(struct window *wnd, const char *name);
 void window_set_toggle_button(
 		struct window *wnd, struct button *btn);
+bool window_is_visible(struct window *wnd);
 
 #endif /* _WINDOW_H */

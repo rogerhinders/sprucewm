@@ -104,10 +104,16 @@ void taskbar_cleanup() {
 }
 
 uint32_t taskbar_get_width() {
+	if(tb_wnd == NULL)
+		return 0;
+
 	return tb_wnd->w;
 }
 
 uint32_t taskbar_get_height() {
+	if(tb_wnd == NULL)
+		return 0;
+
 	return tb_wnd->h;
 }
 
