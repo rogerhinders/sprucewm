@@ -1,6 +1,8 @@
 #include "taskbar.h"
 
 static struct window *tb_wnd = NULL;
+static xcb_gcontext_t bg_gc_click;
+static xcb_gcontext_t bg_gc_noclick;
 
 static void button_click_handler(bool pressed, void *arg) {
 	struct window *wnd = (struct window*)arg;
@@ -40,11 +42,20 @@ static void draw_button(
 
 	xcb_gcontext_t gc = wnd->toggle_btn->pressed ? 
 			font_gc_click : font_gc_noclick;
-if(wnd->toggle_btn->pressed) {
-	printf("CLICK\n");
-} else {
-	printf("NOCLICK\n");
-}
+
+	xcb_gcontext_t bg_gc = wnd->toggle_btn->pressed ?
+		bg_gc_click : bg_gc_noclick;
+
+	/* draw background */
+	xcb_rectangle_t rect = {
+		wnd->toggle_btn->x, 0,
+		wnd->toggle_btn->w, wnd->toggle_btn->h
+	};
+
+	xcb_poly_fill_rectangle(
+			xserver_get_conn(), tb_wnd->handle, bg_gc, 1, &rect);
+
+	/* draw text */
 	xcb_image_text_8(
 			xserver_get_conn(), 
 			strlen(wnd->name),
@@ -72,7 +83,6 @@ bool taskbar_init() {
 	v_list[0] = xserver_screen_get_white();
 	v_list[1] = XCB_EVENT_MASK_BUTTON_RELEASE;
 
-
 	xcb_create_window(
 			xserver_get_conn(),
 			xserver_screen_get_depth(),
@@ -92,6 +102,12 @@ bool taskbar_init() {
 
 	xserver_flush_conn();
 
+	bg_gc_click = xserver_create_drawable_gc(
+			xserver_screen_get_white(), xserver_screen_get_black(), tb_wnd);
+
+	bg_gc_noclick = xserver_create_drawable_gc(
+			xserver_screen_get_white(), xserver_screen_get_white(), tb_wnd);
+
 	return true;
 }
 
@@ -100,6 +116,8 @@ struct window *taskbar_get_window() {
 }
 
 void taskbar_cleanup() {
+	xcb_free_gc(xserver_get_conn(), bg_gc_click);
+	xcb_free_gc(xserver_get_conn(), bg_gc_noclick);
 	window_destroy(tb_wnd);
 }
 

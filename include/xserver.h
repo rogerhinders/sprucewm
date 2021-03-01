@@ -21,5 +21,7 @@ uint8_t xserver_screen_get_depth();
 xcb_visualid_t xserver_screen_get_visual();
 xcb_gcontext_t xserver_create_font_gc(
 		uint32_t bg, uint32_t fg, char *font, struct window *wnd);
+xcb_gcontext_t xserver_create_drawable_gc(
+		uint32_t bg, uint32_t fg, struct window *wnd);
 
 #endif /* _XSERVER_H */

@@ -173,3 +173,13 @@ xcb_gcontext_t xserver_create_font_gc(
 
 	return gc;
 }
+
+xcb_gcontext_t xserver_create_drawable_gc(
+		uint32_t bg, uint32_t fg, struct window *wnd) {
+	xcb_gcontext_t gc = xcb_generate_id(xserver_get_conn());
+	uint32_t mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND;
+	uint32_t vlist[2] = { fg, bg };
+	xcb_create_gc(xserver_get_conn(), gc, wnd->handle, mask, vlist);
+
+	return gc;
+}
