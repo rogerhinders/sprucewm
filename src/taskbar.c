@@ -65,7 +65,7 @@ static void draw_button(
 			wnd->toggle_btn->text);
 }
 
-bool taskbar_init() {
+bool taskbar_init(uint32_t bottom_offset) {
 	struct window *r_wnd = xserver_get_root_wnd();
 	uint32_t v_mask;
 	uint32_t v_list[2];
@@ -77,7 +77,7 @@ bool taskbar_init() {
 	tb_wnd = window_create(xcb_generate_id(xserver_get_conn()));
 	
 	window_setsize(tb_wnd, r_wnd->w, TASKBAR_HEIGHT);
-	window_setcoords(tb_wnd, 0, r_wnd->h - tb_wnd->h);
+	window_setcoords(tb_wnd, 0, r_wnd->h - tb_wnd->h - bottom_offset);
 
 	v_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 	v_list[0] = xserver_screen_get_white();

@@ -3,6 +3,7 @@
 
 #include "general.h"
 #include "wm.h"
+#include "statusbar.h"
 #include "taskbar.h"
 
 int main() {
@@ -22,7 +23,12 @@ int main() {
 		goto _main_cleanup;
 	}
 
-	if(!taskbar_init()) {
+	if(!statusbar_init()) {
+		ret = EXIT_FAILURE;
+		goto _main_cleanup;
+	}
+
+	if(!taskbar_init(statusbar_get_height())) {
 		ret = EXIT_FAILURE;
 		goto _main_cleanup;
 	}
@@ -124,6 +130,7 @@ int main() {
 
 _main_cleanup:
 	wm_cleanup();
+	statusbar_cleanup();
 	taskbar_cleanup();
 	xcb_disconnect(xserver_get_conn());
 	return ret;
