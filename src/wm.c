@@ -74,41 +74,47 @@ void wm_update() {
 			n_visible++;
 	}
 
-	printf("n_visible:%d\n", n_visible);
+	printf("wm n_visible:%d\n", n_visible);
 
 	if(n_visible == 0)
 		return;
 
-
+	/*
 	uint32_t cells_h = (uint32_t)ceil(sqrt(n_visible));
 	uint32_t cells_v = cells_h;
 
 	uint32_t wnd_w = r_wnd->w / cells_h;
 	uint32_t wnd_h = (r_wnd->h - taskbar_get_height()) / cells_v;
 
+	printf("root wxh: %dx%d, w wxh: %dx%d\n",
+			r_wnd->w, r_wnd->h, wnd_w, wnd_h);
+	printf("taskbar wxh: %dx%d\n", taskbar_get_width(), taskbar_get_height());
+	*/
+
+	uint32_t wnd_w = r_wnd->w;
+	uint32_t wnd_h = (r_wnd->h - taskbar_get_height()) / n_visible;
+
 	linked_list_rewind(wm_list);
 
-	for(int cx = 0; cx < cells_h; cx++) {
-		for(int cy = 0; cy < cells_v; cy++) {
-			while((wnd = linked_list_next(wm_list))) {
-				if(wnd == NULL || window_is_visible(wnd))
-					break;
-			}
-
-			if(wnd == NULL)
+	for(int wi = 0; wi < n_visible; wi++) {
+		while((wnd = linked_list_next(wm_list))) {
+			if(wnd == NULL || window_is_visible(wnd))
 				break;
-
-			window_setcoords(wnd, cx * wnd_w, cy * wnd_h);
-			window_setsize(wnd, wnd_w, wnd_h);
-
-			c_values[0] = wnd->x;
-			c_values[1] = wnd->y;
-			c_values[2] = wnd->w;
-			c_values[3] = wnd->h;
-
-			xcb_configure_window(
-					xserver_get_conn(), wnd->handle, c_mask, c_values);
 		}
+
+		if(wnd == NULL)
+			break;
+
+		window_setcoords(wnd, 0, wi * wnd_h);
+		window_setsize(wnd, wnd_w, wnd_h);
+
+		c_values[0] = wnd->x;
+		c_values[1] = wnd->y;
+		c_values[2] = wnd->w;
+		c_values[3] = wnd->h;
+
+		xcb_configure_window(
+				xserver_get_conn(), wnd->handle, c_mask, c_values);
 	}
 
 	xserver_flush_conn();

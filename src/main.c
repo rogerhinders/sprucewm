@@ -69,7 +69,9 @@ int main() {
 			printf("--- map notify! ---\n");
 			wm_update();
 			break;
-		case XCB_BUTTON_RELEASE:
+		case XCB_BUTTON_PRESS:
+/*		case XCB_BUTTON_RELEASE: */
+			printf("mouse button release \n");
 			bev = (xcb_button_release_event_t *)ev;
 			wnd = taskbar_get_window();
 

@@ -8,7 +8,7 @@
 #include "wm.h"
 
 /* #define TASKBAR_HEIGHT_PERCENT 0.10 */ 
-#define TASKBAR_HEIGHT 16
+#define TASKBAR_HEIGHT 64
 #define TASKBAR_BUTTON_YOFFSET 14
 
 bool taskbar_init();

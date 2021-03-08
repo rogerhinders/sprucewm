@@ -81,7 +81,7 @@ bool taskbar_init() {
 
 	v_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 	v_list[0] = xserver_screen_get_white();
-	v_list[1] = XCB_EVENT_MASK_BUTTON_RELEASE;
+	v_list[1] = XCB_EVENT_MASK_BUTTON_PRESS;
 
 	xcb_create_window(
 			xserver_get_conn(),
@@ -150,13 +150,13 @@ void taskbar_update() {
 	xcb_gcontext_t fgc_noclick = xserver_create_font_gc(
 			xserver_screen_get_white(),
 			xserver_screen_get_black(),
-			"screen8x16",
+			"fixed",
 			tb_wnd);
 
 	xcb_gcontext_t fgc_click = xserver_create_font_gc(
 			xserver_screen_get_black(),
 			xserver_screen_get_white(),
-			"screen8x16",
+			"fixed",
 			tb_wnd);
 
 	xcb_clear_area(
@@ -188,6 +188,7 @@ void taskbar_update() {
 }
 
 void taskbar_onclick(uint32_t x, uint32_t y) {
+	printf("taskbar: click at %dx%d\n", x, y);
 	struct window *wnd;
 	struct linked_list *all = wm_get_windows();
 	linked_list_rewind(all);
