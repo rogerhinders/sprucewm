@@ -109,8 +109,6 @@ void statusbar_update() {
 	linked_list_rewind(l_widgets);
 
 	while((wdg = linked_list_next(l_widgets)) != NULL) {
-		printf("wdg: %s\n", wdg->text);
-
 		xcb_image_text_8(
 				xserver_get_conn(), 
 				strlen(wdg->text),
