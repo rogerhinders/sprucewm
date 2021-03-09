@@ -1,2 +1,2 @@
-# lamewm
-Window manager for X
+# sprucewm
+Small window manager optimized for PinePhone

@@ -1,4 +1,4 @@
-EXE := lamewm
+EXE := sprucewm
 
 SRC_DIR := src
 OBJ_DIR := obj
