@@ -6,6 +6,7 @@
 #include "general.h"
 #include "xserver.h"
 #include "wm.h"
+#include "statusbar.h"
 
 /* #define TASKBAR_HEIGHT_PERCENT 0.10 */ 
 #define TASKBAR_HEIGHT 64

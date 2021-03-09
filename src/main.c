@@ -9,6 +9,10 @@
 int main() {
 	int32_t ret = EXIT_SUCCESS;
 	bool wm_running = true;
+	struct widget *date_wdg = NULL;
+	struct widget *battery_wdg = NULL;
+	struct widget *cpu_wdg = NULL;
+	struct widget *gpu_wdg = NULL;
 
 	wm_init();
 	
@@ -29,6 +33,24 @@ int main() {
 	}
 
 	if(!taskbar_init(statusbar_get_height())) {
+		ret = EXIT_FAILURE;
+		goto _main_cleanup;
+	}
+
+	/* init widgets */
+	battery_wdg = widget_create("/home/m/sprucewm/widgets/wdg_battery.sh");
+	cpu_wdg = widget_create("/home/m/sprucewm/widgets/wdg_cpu.sh");
+	gpu_wdg = widget_create("/home/m/sprucewm/widgets/wdg_gpu.sh");
+	date_wdg = widget_create("/home/m/sprucewm/widgets/wdg_date.sh");
+
+	/* register widgets on statusbar */
+	statusbar_register_widget(battery_wdg);
+	statusbar_register_widget(cpu_wdg);
+	statusbar_register_widget(gpu_wdg);
+	statusbar_register_widget(date_wdg);
+
+	if(!statusbar_start_update_thread()) {
+		printf("err: unable to start statusbar update thread!\n");
 		ret = EXIT_FAILURE;
 		goto _main_cleanup;
 	}
@@ -130,8 +152,13 @@ int main() {
 
 _main_cleanup:
 	wm_cleanup();
+	statusbar_stop_update_thread();
 	statusbar_cleanup();
 	taskbar_cleanup();
+	widget_destroy(date_wdg);
+	widget_destroy(battery_wdg);
+	widget_destroy(cpu_wdg);
+	widget_destroy(gpu_wdg);
 	xcb_disconnect(xserver_get_conn());
 	return ret;
 }

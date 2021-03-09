@@ -92,7 +92,9 @@ void wm_update() {
 	*/
 
 	uint32_t wnd_w = r_wnd->w;
-	uint32_t wnd_h = (r_wnd->h - taskbar_get_height()) / n_visible;
+	uint32_t wnd_h = (
+				r_wnd->h - taskbar_get_height() - statusbar_get_height()
+			) / n_visible;
 
 	linked_list_rewind(wm_list);
 

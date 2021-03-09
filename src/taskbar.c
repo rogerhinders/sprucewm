@@ -177,9 +177,7 @@ void taskbar_update() {
 		}
 
 		draw_button(wnd, fgc_noclick, fgc_click);
-
 		offset += item_w;
-
 	}
 
 	xcb_free_gc(xserver_get_conn(), fgc_noclick);

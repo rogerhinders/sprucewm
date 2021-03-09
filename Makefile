@@ -8,7 +8,7 @@ OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 CPPFLAGS := -Iinclude
 CFLAGS   := -std=gnu99 -Wall
-LDLIBS   := -lxcb -lxcb-keysyms -lm
+LDLIBS   := -lxcb -lxcb-keysyms -lm -lpthread
 
 .PHONY: all clean
 
