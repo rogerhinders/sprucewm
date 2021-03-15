@@ -14,6 +14,8 @@ struct window *window_create(const xcb_window_t handle) {
 	window_setname(wnd, " ");
 	window_set_toggle_button(wnd, NULL);
 
+	wnd->allow_input = true;
+
 	return wnd;
 }
 
@@ -42,4 +44,10 @@ void window_set_toggle_button(
 
 bool window_is_visible(struct window *wnd) {
 	return wnd->toggle_btn == NULL || wnd->toggle_btn->pressed;
+}
+
+void window_set_wm_hints(
+		struct window *wnd, const xcb_icccm_wm_hints_t *wm_hints) {
+	if(wm_hints->flags & XCB_ICCCM_WM_HINT_INPUT)
+		wnd->allow_input = (bool)wm_hints->input;
 }

@@ -36,7 +36,11 @@ bool xserver_init() {
 	root_attr_name = XCB_CW_EVENT_MASK;
 	root_attr_value = XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
 			XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-			XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
+			XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
+			XCB_EVENT_MASK_PROPERTY_CHANGE |
+			XCB_EVENT_MASK_FOCUS_CHANGE |
+			XCB_EVENT_MASK_ENTER_WINDOW |
+			XCB_EVENT_MASK_LEAVE_WINDOW;
 
 	xcb_screen_t *screen = xcb_setup_roots_iterator(
 			xcb_get_setup(x_conn)).data;

@@ -1,5 +1,6 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
+#include <xcb/xcb_icccm.h>
 
 #include "general.h"
 #include "wm.h"
@@ -60,6 +61,7 @@ int main() {
 	xcb_generic_event_t *ev;
 	xcb_key_press_event_t *kev;
 	xcb_button_release_event_t *bev;
+	xcb_configure_notify_event_t *cfgev;
 
 	struct window *wnd;
 
@@ -72,6 +74,29 @@ int main() {
 			break;
 		case XCB_CONFIGURE_NOTIFY:
 			printf("--- configure notify request! ---\n");
+			cfgev = (xcb_configure_notify_event_t*)ev;
+			xcb_get_property_cookie_t cookie = xcb_icccm_get_wm_hints_unchecked(
+					xserver_get_conn(),
+					cfgev->window);
+
+			xcb_icccm_wm_hints_t wm_hints;
+
+			if(!xcb_icccm_get_wm_hints_reply(
+					xserver_get_conn(),
+					cookie,
+					&wm_hints,
+					NULL))
+				break;
+
+			printf("got wm hints!\n");
+
+			wnd = wm_find_window(cfgev->window);
+
+			if(wnd == NULL)
+				break;
+
+			printf("setting wm hints\n");
+			window_set_wm_hints(wnd, &wm_hints);
 			break;
 		case XCB_MAP_REQUEST:
 			printf("--- map request! ---\n");
@@ -117,6 +142,38 @@ int main() {
 
 		case XCB_CREATE_NOTIFY:
 			printf("--- create notify ---\n");
+			break;
+		
+		case XCB_FOCUS_IN:
+			printf("--- focus in ---\n");
+			break;
+
+		case XCB_ENTER_NOTIFY:
+			printf("--- enter notify ---\n");
+			xcb_enter_notify_event_t *eev = (xcb_enter_notify_event_t*)ev;
+			wnd = wm_find_window(eev->event);
+			
+			if(wnd == NULL)
+				break;
+	
+			printf("check if window wants focus\n");
+
+			xcb_window_t w_focus = wnd->allow_input ? wnd->handle : XCB_NONE;
+
+			if(w_focus == XCB_NONE && wm_get_current_focus() != NULL)
+				w_focus = wm_get_current_focus()->handle;
+
+			if(w_focus == XCB_NONE) {
+				if(wm_get_current_focus() != NULL)
+					w_focus = wm_get_current_focus()->handle;
+			} else 
+				wm_set_current_focus(wnd);
+
+			xcb_set_input_focus(
+					xserver_get_conn(),
+					XCB_INPUT_FOCUS_POINTER_ROOT,
+					w_focus,
+					XCB_CURRENT_TIME);
 			break;
 
 		case XCB_KEY_PRESS:

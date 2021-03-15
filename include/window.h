@@ -2,6 +2,7 @@
 #define _WINDOW_H
 
 #include <xcb/xcb.h>
+#include <xcb/xcb_icccm.h>
 #include <string.h>
 #include "general.h"
 #include "button.h"
@@ -13,6 +14,7 @@ struct window {
 	uint32_t x, y, w, h;
 	char name[WINDOW_NAME_MAXLEN];
 	struct button *toggle_btn;
+	bool allow_input;
 };
 
 struct window *window_create(xcb_window_t handle);
@@ -23,5 +25,6 @@ void window_setname(struct window *wnd, const char *name);
 void window_set_toggle_button(
 		struct window *wnd, struct button *btn);
 bool window_is_visible(struct window *wnd);
-
+void window_set_wm_hints(
+		struct window *wnd, const xcb_icccm_wm_hints_t *wm_hints);
 #endif /* _WINDOW_H */

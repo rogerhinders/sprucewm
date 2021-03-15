@@ -1,6 +1,7 @@
 #include "wm.h"
 
 static struct linked_list *wm_list = NULL;
+static struct window* current_focus = NULL;
 
 void wm_init() {
 	wm_list = linked_list_create();
@@ -37,6 +38,9 @@ void wm_unregister(struct window *wnd) {
 		return;
 	}
 
+	if(current_focus == wnd)
+		wm_set_current_focus(NULL);
+
 	linked_list_remove(wm_list, wnd);
 }
 
@@ -65,6 +69,7 @@ void wm_update() {
 			XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
 
 	uint32_t c_values[4];
+	uint32_t a_values = XCB_EVENT_MASK_FOCUS_CHANGE|XCB_EVENT_MASK_ENTER_WINDOW;
 	uint32_t n_visible = 0;
 
 	linked_list_rewind(wm_list);
@@ -117,6 +122,12 @@ void wm_update() {
 
 		xcb_configure_window(
 				xserver_get_conn(), wnd->handle, c_mask, c_values);
+
+		xcb_change_window_attributes(
+				xserver_get_conn(),
+				wnd->handle,
+				XCB_CW_EVENT_MASK,
+				&a_values);
 	}
 
 	xserver_flush_conn();
@@ -128,4 +139,12 @@ void wm_cleanup() {
 
 struct linked_list *wm_get_windows() {
 	return wm_list;
+}
+
+void wm_set_current_focus(struct window *wnd) {
+	current_focus = wnd;
+}
+
+struct window *wm_get_current_focus() {
+	return current_focus;
 }
