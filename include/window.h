@@ -3,7 +3,9 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_icccm.h>
+#include <xcb/xproto.h>
 #include <string.h>
+#include "xserver.h"
 #include "general.h"
 #include "button.h"
 
@@ -15,10 +17,12 @@ struct window {
 	char name[WINDOW_NAME_MAXLEN];
 	struct button *toggle_btn;
 	bool allow_input;
+	bool is_docked;
 };
 
 struct window *window_create(xcb_window_t handle);
 void window_destroy(struct window *wnd);
+void window_set_dock(struct window *wnd, bool dock);
 void window_setcoords(struct window *wnd, uint32_t x, uint32_t y);
 void window_setsize(struct window *wnd, uint32_t w, uint32_t h);
 void window_setname(struct window *wnd, const char *name);

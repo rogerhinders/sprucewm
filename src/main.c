@@ -62,6 +62,7 @@ int main() {
 	xcb_key_press_event_t *kev;
 	xcb_button_release_event_t *bev;
 	xcb_configure_notify_event_t *cfgev;
+	xcb_property_notify_event_t *pev;
 
 	struct window *wnd;
 
@@ -98,13 +99,32 @@ int main() {
 			printf("setting wm hints\n");
 			window_set_wm_hints(wnd, &wm_hints);
 			break;
+		case XCB_PROPERTY_NOTIFY:
+			pev = (xcb_property_notify_event_t*)ev;
+			wnd = wm_find_window(pev->window);
+
+			if(wnd == NULL)
+				break;
+
+			wm_check_ewmh(wnd);
+			break;
 		case XCB_MAP_REQUEST:
 			printf("--- map request! ---\n");
 			wnd = window_create(((xcb_map_request_event_t *)ev)->window);
 			wm_register(wnd);
 			xserver_map_window(wnd);
+			xcb_get_geometry_cookie_t g_cookie;
+			xcb_get_geometry_reply_t *g_reply;
 
-			//wm_update();
+			g_cookie = xcb_get_geometry(xserver_get_conn(), wnd->handle);
+
+			if((g_reply = xcb_get_geometry_reply(
+					xserver_get_conn(), g_cookie, NULL))) {
+				 window_setsize(wnd, g_reply->width, g_reply->height);
+			}
+
+			wm_check_ewmh(wnd);
+
 			taskbar_update();
 			break;
 		case XCB_DESTROY_NOTIFY:
@@ -158,22 +178,10 @@ int main() {
 	
 			printf("check if window wants focus\n");
 
-			xcb_window_t w_focus = wnd->allow_input ? wnd->handle : XCB_NONE;
-
-			if(w_focus == XCB_NONE && wm_get_current_focus() != NULL)
-				w_focus = wm_get_current_focus()->handle;
-
-			if(w_focus == XCB_NONE) {
-				if(wm_get_current_focus() != NULL)
-					w_focus = wm_get_current_focus()->handle;
-			} else 
+			if(wnd->allow_input)
 				wm_set_current_focus(wnd);
 
-			xcb_set_input_focus(
-					xserver_get_conn(),
-					XCB_INPUT_FOCUS_POINTER_ROOT,
-					w_focus,
-					XCB_CURRENT_TIME);
+			wm_refresh_focus();
 			break;
 
 		case XCB_KEY_PRESS:

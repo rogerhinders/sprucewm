@@ -13,10 +13,15 @@ struct window *window_create(const xcb_window_t handle) {
 	window_setsize(wnd, 0, 0);
 	window_setname(wnd, " ");
 	window_set_toggle_button(wnd, NULL);
+	window_set_dock(wnd, false);
 
 	wnd->allow_input = true;
 
 	return wnd;
+}
+
+void window_set_dock(struct window *wnd, bool dock) {
+	wnd->is_docked = dock;
 }
 
 void window_destroy(struct window *wnd) {

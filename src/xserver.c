@@ -39,8 +39,7 @@ bool xserver_init() {
 			XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
 			XCB_EVENT_MASK_PROPERTY_CHANGE |
 			XCB_EVENT_MASK_FOCUS_CHANGE |
-			XCB_EVENT_MASK_ENTER_WINDOW |
-			XCB_EVENT_MASK_LEAVE_WINDOW;
+			XCB_EVENT_MASK_ENTER_WINDOW;
 
 	xcb_screen_t *screen = xcb_setup_roots_iterator(
 			xcb_get_setup(x_conn)).data;
