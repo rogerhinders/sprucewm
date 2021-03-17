@@ -3,6 +3,23 @@
 static struct linked_list *wm_list = NULL;
 static struct window* current_focus = NULL;
 
+static void set_docked_visibility(bool visible) {
+	struct window *wnd;
+
+	linked_list_rewind(wm_list);
+
+	while((wnd = linked_list_next(wm_list)) != NULL) {
+		if(!wnd->is_docked)
+			continue;
+
+		if(visible)
+			xserver_map_window(wnd);
+		else
+			xserver_unmap_window(wnd);
+	}
+
+	xserver_flush_conn();
+}
 
 static uint32_t get_status_area_height() {
 	return taskbar_get_height() + statusbar_get_height();
@@ -245,3 +262,12 @@ void wm_check_ewmh(struct window *wnd) {
 		window_set_dock(wnd, true);
 	}
 }
+
+void wm_hide_docked() {
+	set_docked_visibility(false);
+}
+
+void wm_show_docked() {
+	set_docked_visibility(true);
+}
+

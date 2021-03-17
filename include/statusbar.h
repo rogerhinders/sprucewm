@@ -15,6 +15,7 @@
 #define STATUSBAR_HEIGHT 32
 #define STATUSBAR_UPDATE_INTERVAL 1
 #define STATUSBAR_PADDING_LEFT 16
+#define STATUSBAR_DOCK_BUTTON_WIDTH 100
 
 bool statusbar_init();
 void statusbar_cleanup();

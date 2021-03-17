@@ -23,7 +23,7 @@ static void button_click_handler(bool pressed, void *arg) {
 static void setup_window_btn(
 		struct window *wnd,
 		uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
-	struct button *btn = button_create();
+	struct button *btn = button_create(wnd);
 	window_set_toggle_button(wnd, btn);
 	button_setcoords(btn, x, y);
 	button_setsize(btn, w, h);
@@ -48,8 +48,8 @@ static void draw_button(
 
 	/* draw background */
 	xcb_rectangle_t rect = {
-		wnd->toggle_btn->x, 0,
-		wnd->toggle_btn->w, wnd->toggle_btn->h
+		wnd->toggle_btn->rect.x, 0,
+		wnd->toggle_btn->rect.width, wnd->toggle_btn->rect.height
 	};
 
 	xcb_poly_fill_rectangle(
@@ -61,7 +61,7 @@ static void draw_button(
 			strlen(wnd->name),
 			tb_wnd->handle, 
 			gc, 
-			wnd->toggle_btn->x, wnd->toggle_btn->y,
+			wnd->toggle_btn->rect.x, wnd->toggle_btn->rect.y,
 			wnd->toggle_btn->text);
 }
 
@@ -139,7 +139,14 @@ void taskbar_update() {
 	struct linked_list *all = wm_get_windows();
 	struct window *wnd;
 
-	uint32_t n = linked_list_count(all);
+	uint32_t n = 0;
+
+	linked_list_rewind(all);
+
+	while((wnd = linked_list_next(all)) != NULL)
+		if(!wnd->is_docked)
+			n++;
+
 	uint32_t item_w = taskbar_get_width() / n;
 	uint32_t item_h = taskbar_get_height();
 	uint32_t offset = 0;
@@ -168,6 +175,10 @@ void taskbar_update() {
 	printf("updating taskbar \n");
 
 	while((wnd = linked_list_next(all)) != NULL) {
+		/* do not add docked windows to taskbar */
+		if(wnd->is_docked)
+			continue;
+
 		/* create button if never created */
 		if(wnd->toggle_btn == false)
 			setup_window_btn(wnd, offset, item_y, item_w, item_h);

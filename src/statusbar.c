@@ -1,11 +1,17 @@
 #include "statusbar.h"
 
 static struct window *sb_wnd = NULL;
-static xcb_gcontext_t bg_gc_click;
-static xcb_gcontext_t bg_gc_noclick;
 static struct linked_list *l_widgets = NULL;
 static pthread_t t_handle;
 static bool t_running = false;
+static struct button *dock_btn = NULL;
+
+static void dock_clickhandler(bool pressed, void *arg) {
+	if(pressed)
+		wm_show_docked();
+	else
+		wm_hide_docked();
+}
 
 static void *update_thread(void *arg) {
 	struct widget *wdg;
@@ -40,7 +46,7 @@ bool statusbar_init() {
 
 	/* init window */
 	sb_wnd = window_create(xcb_generate_id(xserver_get_conn()));
-	
+
 	window_setsize(sb_wnd, r_wnd->w, STATUSBAR_HEIGHT);
 	window_setcoords(sb_wnd, 0, r_wnd->h - sb_wnd->h);
 
@@ -67,22 +73,23 @@ bool statusbar_init() {
 
 	xserver_flush_conn();
 
-	/* init drawables */
-	bg_gc_click = xserver_create_drawable_gc(
-			xserver_screen_get_white(), xserver_screen_get_black(), sb_wnd);
-
-	bg_gc_noclick = xserver_create_drawable_gc(
-			xserver_screen_get_white(), xserver_screen_get_white(), sb_wnd);
-
 	/* init widget related stuff */
 	l_widgets = linked_list_create();
+
+	/* init dock toggle btn */
+	dock_btn = button_create(sb_wnd);
+	button_setsize(dock_btn, STATUSBAR_DOCK_BUTTON_WIDTH, STATUSBAR_HEIGHT);
+	button_settext(dock_btn, "KBD");
+	button_setcoords(dock_btn, STATUSBAR_PADDING_LEFT, 0);
+	button_set_text_padding(dock_btn, 23, 33, 0, 0);
+	button_setpressed(dock_btn, true);
+	button_setclick_handler(dock_btn, dock_clickhandler);
 
 	return true;
 }
 
 void statusbar_cleanup() {
-	xcb_free_gc(xserver_get_conn(), bg_gc_click);
-	xcb_free_gc(xserver_get_conn(), bg_gc_noclick);
+	button_destroy(dock_btn);
 	window_destroy(sb_wnd);
 	linked_list_destroy(l_widgets);
 }
@@ -102,23 +109,27 @@ void statusbar_update() {
 		return;
 
 	uint32_t wdg_w = (
-			statusbar_get_width() - STATUSBAR_PADDING_LEFT) / n_widgets;
-	uint32_t x = STATUSBAR_PADDING_LEFT;
+			statusbar_get_width() - STATUSBAR_PADDING_LEFT * 2
+			- STATUSBAR_DOCK_BUTTON_WIDTH) / n_widgets;
+	uint32_t x = STATUSBAR_PADDING_LEFT * 2 + STATUSBAR_DOCK_BUTTON_WIDTH;
 	uint32_t y = 20;
 
 	linked_list_rewind(l_widgets);
 
 	while((wdg = linked_list_next(l_widgets)) != NULL) {
 		xcb_image_text_8(
-				xserver_get_conn(), 
+				xserver_get_conn(),
 				strlen(wdg->text),
-				sb_wnd->handle, 
-				fgc, 
+				sb_wnd->handle,
+				fgc,
 				x, y,
 				wdg->text);
 
 		x += wdg_w;
 	}
+
+	/* draw dock btn */
+	button_draw(dock_btn);
 
 	xcb_free_gc(xserver_get_conn(), fgc);
 	xserver_flush_conn();
@@ -143,6 +154,8 @@ uint32_t statusbar_get_height() {
 }
 
 void statusbar_onclick(uint32_t x, uint32_t y) {
+	if(button_coord_in_bounds(dock_btn, x, y))
+		button_onclick(dock_btn, NULL);
 }
 
 void statusbar_register_widget(struct widget *wdg) {

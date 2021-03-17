@@ -56,6 +56,11 @@ int main() {
 		goto _main_cleanup;
 	}
 
+	/* start keyboard */
+	system("sprucekbd &");
+
+	/* process events */
+
 	xcb_key_symbols_t *k_syms = xcb_key_symbols_alloc(xserver_get_conn());
 
 	xcb_generic_event_t *ev;
@@ -152,9 +157,16 @@ int main() {
 				printf("pressed on taskbar @ %d,%d\n",
 						bev->event_x, bev->event_y);
 				taskbar_onclick(bev->event_x, bev->event_y);
+				break;
 			}
 
-			printf("pressed mouse\n");
+			wnd = statusbar_get_window();
+
+			if(wnd != NULL && bev->event == wnd->handle) {
+				printf("pressed on statusbar @ %d, %d\n",
+						bev->event_x, bev->event_y);
+				statusbar_onclick(bev->event_x, bev->event_y);
+			}
 			break;
 		case XCB_KEY_RELEASE:
 			printf("--- key release! ---\n");

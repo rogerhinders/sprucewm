@@ -18,10 +18,12 @@ struct window {
 	struct button *toggle_btn;
 	bool allow_input;
 	bool is_docked;
+	bool visible;
 };
 
 struct window *window_create(xcb_window_t handle);
 void window_destroy(struct window *wnd);
+void window_set_visible(struct window *wnd, bool visible);
 void window_set_dock(struct window *wnd, bool dock);
 void window_setcoords(struct window *wnd, uint32_t x, uint32_t y);
 void window_setsize(struct window *wnd, uint32_t w, uint32_t h);

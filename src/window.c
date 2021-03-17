@@ -14,10 +14,15 @@ struct window *window_create(const xcb_window_t handle) {
 	window_setname(wnd, " ");
 	window_set_toggle_button(wnd, NULL);
 	window_set_dock(wnd, false);
+	window_set_visible(wnd, true);
 
 	wnd->allow_input = true;
 
 	return wnd;
+}
+
+void window_set_visible(struct window *wnd, bool visible) {
+	wnd->visible = visible;
 }
 
 void window_set_dock(struct window *wnd, bool dock) {
@@ -48,7 +53,8 @@ void window_set_toggle_button(
 }
 
 bool window_is_visible(struct window *wnd) {
-	return wnd->toggle_btn == NULL || wnd->toggle_btn->pressed;
+	return wnd->visible;
+//	return wnd->toggle_btn == NULL || wnd->toggle_btn->pressed;
 }
 
 void window_set_wm_hints(

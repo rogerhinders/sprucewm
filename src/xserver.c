@@ -82,6 +82,8 @@ void xserver_map_window(struct window *wnd) {
 	}
 
 	xcb_map_window(x_conn, wnd->handle);
+	window_set_visible(wnd, true);
+
 	xserver_flush_conn();
 }
 
@@ -91,6 +93,8 @@ void xserver_unmap_window(struct window *wnd) {
 	}
 
 	xcb_unmap_window(x_conn, wnd->handle);
+	window_set_visible(wnd, false);
+
 	xserver_flush_conn();
 }
 

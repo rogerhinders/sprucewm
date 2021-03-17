@@ -26,5 +26,7 @@ struct window *wm_get_current_focus();
 void wm_set_current_focus(struct window *wnd);
 void wm_refresh_focus();
 void wm_check_ewmh(struct window *wnd);
+void wm_hide_docked();
+void wm_show_docked();
 
 #endif /* _WM_H */
